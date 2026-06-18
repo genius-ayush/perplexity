@@ -81,6 +81,7 @@ app.post('/perplexity_ask', (req, res) => __awaiter(void 0, void 0, void 0, func
             if (event.type === "response.output_text.delta") {
                 res.write(event.delta);
             }
+            console.log(event);
         }
     }
     catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -90,11 +91,11 @@ app.post('/perplexity_ask', (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         finally { if (e_1) throw e_1.error; }
     }
-    res.write("\n\n------SOURCES------\n");
+    // res.write("\n\n------SOURCES------\n");
     //step  7 -  also stream back the resources and followup questions(which we can get from another parallel llm call)
-    for (const result of webSearchResult) {
-        res.write(JSON.stringify(result) + "\n");
-    }
+    // for (const result of webSearchResult) {
+    // 	res.write(JSON.stringify(result) + "\n");
+    // }
     //step8 - close the event stream	
     res.end();
 }));

@@ -24,6 +24,28 @@ app.get('/', (req, res) => {
 	res.send("hello world!")
 })
 
+//Signup
+app.post('/signup' , (req , res)=>{
+
+})
+
+
+//Signin
+app.post('/singin' , (req , res)=>{
+
+})
+
+//past conversation get
+app.post('/conversation' , (req , res)=>{
+
+})
+
+
+//past conversation get
+app.post('/conversation/:conversationId' , (req , res)=>{
+
+})
+
 
 app.post('/perplexity_ask', async (req, res) => {
 
@@ -73,7 +95,8 @@ app.post('/perplexity_ask', async (req, res) => {
 		],
 		stream: true,
 	});
-	console.log(response) ; 
+	
+	
 	res.setHeader("Content-Type", "text/plain; charset=utf-8");
 
 
@@ -81,20 +104,31 @@ app.post('/perplexity_ask', async (req, res) => {
 		if (event.type === "response.output_text.delta") {
 			res.write(event.delta);
 		}
+		console.log("event" , event) ; 
 	}
 
 
-	res.write("\n\n------SOURCES------\n");
+	res.write("\n<SOURCES>\n");
 	//step  7 -  also stream back the resources and followup questions(which we can get from another parallel llm call)
 
 	for (const result of webSearchResult) {
 		res.write(JSON.stringify(result) + "\n");
 	}
 
+	res.write("\n</SOURCES>\n");
+
 
 	//step8 - close the event stream	
-
+	console.log(res) ; 
 	res.end();
+})
+
+app.post("/perplexity_ask/followup" , async(req , res)=>{
+
+	// step 1- get the existing chat from the db
+	// step 2- fordward the full history to the llm
+	// step 2.5- do the context engineering here 
+	// step 3- stream the response to the use
 })
 
 app.listen(port, () => {
