@@ -12,6 +12,8 @@ console.log( process.env.TAVILY_API_KEY)
 console.log(client);
 const app = express();
 const port = 3000;
+import { PrismaClient } from '@prisma/client';
+const prisma = new Prisma() ; 
 
 const openai = new OpenAI({
 	apiKey: process.env.LLM_API_KEY , 
@@ -19,6 +21,8 @@ const openai = new OpenAI({
 });
 
 app.use(express.json());
+
+const res = await prisma.
 
 app.get('/', (req, res) => {
 	res.send("hello world!")
@@ -53,7 +57,7 @@ app.post('/perplexity_ask', async (req, res) => {
 	//step1 - get the query from the user 
 
 	const query = req.body.query;
-	console.log(query);
+	
 
 	//step2 -  make sure user has the access/credits to hit the endpoint
 
@@ -104,7 +108,7 @@ app.post('/perplexity_ask', async (req, res) => {
 		if (event.type === "response.output_text.delta") {
 			res.write(event.delta);
 		}
-		console.log("event" , event) ; 
+		// console.log("event" , event) ; 
 	}
 
 
@@ -112,13 +116,12 @@ app.post('/perplexity_ask', async (req, res) => {
 	//step  7 -  also stream back the resources and followup questions(which we can get from another parallel llm call)
 
 	for (const result of webSearchResult) {
-		res.write(JSON.stringify(result) + "\n");
+		res.write(JSON.stringify(result.url) + "\n");
 	}
-
-	res.write("\n</SOURCES>\n");
 
 
 	//step8 - close the event stream	
+	res.write("/n </SOURCES>")
 	console.log(res) ; 
 	res.end();
 })
@@ -128,7 +131,7 @@ app.post("/perplexity_ask/followup" , async(req , res)=>{
 	// step 1- get the existing chat from the db
 	// step 2- fordward the full history to the llm
 	// step 2.5- do the context engineering here 
-	// step 3- stream the response to the use
+	// step 3- stream the response to the user
 })
 
 app.listen(port, () => {

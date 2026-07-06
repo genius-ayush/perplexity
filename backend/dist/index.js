@@ -38,11 +38,22 @@ app.use(express_1.default.json());
 app.get('/', (req, res) => {
     res.send("hello world!");
 });
+//Signup
+app.post('/signup', (req, res) => {
+});
+//Signin
+app.post('/singin', (req, res) => {
+});
+//past conversation get
+app.post('/conversation', (req, res) => {
+});
+//past conversation get
+app.post('/conversation/:conversationId', (req, res) => {
+});
 app.post('/perplexity_ask', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     //step1 - get the query from the user 
     var _a, e_1, _b, _c;
     const query = req.body.query;
-    console.log(query);
     //step2 -  make sure user has the access/credits to hit the endpoint
     //step3 - (TODO) check if we have web search indexed for similar query 
     //step4 -  web search to gather resources
@@ -71,7 +82,6 @@ app.post('/perplexity_ask', (req, res) => __awaiter(void 0, void 0, void 0, func
         ],
         stream: true,
     });
-    console.log(response);
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     try {
         for (var _d = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _d = true) {
@@ -81,7 +91,6 @@ app.post('/perplexity_ask', (req, res) => __awaiter(void 0, void 0, void 0, func
             if (event.type === "response.output_text.delta") {
                 res.write(event.delta);
             }
-            console.log(event);
         }
     }
     catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -91,13 +100,21 @@ app.post('/perplexity_ask', (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         finally { if (e_1) throw e_1.error; }
     }
-    // res.write("\n\n------SOURCES------\n");
+    res.write("\n<SOURCES>\n");
     //step  7 -  also stream back the resources and followup questions(which we can get from another parallel llm call)
-    // for (const result of webSearchResult) {
-    // 	res.write(JSON.stringify(result) + "\n");
-    // }
+    for (const result of webSearchResult) {
+        res.write(JSON.stringify(result.url) + "\n");
+    }
     //step8 - close the event stream	
+    res.write("/n </SOURCES>");
+    console.log(res);
     res.end();
+}));
+app.post("/perplexity_ask/followup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // step 1- get the existing chat from the db
+    // step 2- fordward the full history to the llm
+    // step 2.5- do the context engineering here 
+    // step 3- stream the response to the user
 }));
 app.listen(port, () => {
     console.log(`this is our perplexity backend on ${port}`);
