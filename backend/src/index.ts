@@ -8,12 +8,30 @@ import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from './prompt';
 dotenv.config();
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
-console.log( process.env.TAVILY_API_KEY)
-console.log(client);
 const app = express();
 const port = 3000;
+import "dotenv/config";
+// import { PrismaClient } from "./generated/prisma/client";
+// import { PrismaClient } from '../generated/prisma/client';
+// import {PrismaClient} from '../generated/prisma'
 import { PrismaClient } from '@prisma/client';
-const prisma = new Prisma() ; 
+import { PrismaPg } from "@prisma/adapter-pg";
+
+
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+export const prisma = new PrismaClient({ adapter });
+
+
+prisma.user.create({
+	data:{
+		email: "ayush@gmail.com" , 
+		provider: "Github" , 
+		name : "Ayush" , 
+		
+	}
+})
+
 
 const openai = new OpenAI({
 	apiKey: process.env.LLM_API_KEY , 
@@ -22,7 +40,6 @@ const openai = new OpenAI({
 
 app.use(express.json());
 
-const res = await prisma.
 
 app.get('/', (req, res) => {
 	res.send("hello world!")
