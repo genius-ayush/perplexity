@@ -11,10 +11,7 @@ const client = tavily({ apiKey: process.env.TAVILY_API_KEY });
 const app = express();
 const port = 3000;
 import "dotenv/config";
-// import { PrismaClient } from "./generated/prisma/client";
-// import { PrismaClient } from '../generated/prisma/client';
-// import {PrismaClient} from '../generated/prisma'
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 
@@ -23,22 +20,30 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 export const prisma = new PrismaClient({ adapter });
 
 
-prisma.user.create({
-	data:{
-		email: "ayush@gmail.com" , 
-		provider: "Github" , 
-		name : "Ayush" , 
-		
-	}
-})
+
 
 
 const openai = new OpenAI({
-	apiKey: process.env.LLM_API_KEY , 
+	apiKey: process.env.LLM_API_KEY,
 	baseURL: "https://api.groq.com/openai/v1",
 });
 
 app.use(express.json());
+
+
+async function main() {
+  const user = await prisma.user.create({
+    data: {
+      email: "ayush@gmail.com",
+      provider: "GITHUB",
+      name: "Ayush",
+    },
+  });
+
+  console.log(user);
+}
+
+main().catch(console.error);
 
 
 app.get('/', (req, res) => {
@@ -46,24 +51,24 @@ app.get('/', (req, res) => {
 })
 
 //Signup
-app.post('/signup' , (req , res)=>{
+app.post('/signup', (req, res) => {
 
 })
 
 
 //Signin
-app.post('/singin' , (req , res)=>{
+app.post('/singin', (req, res) => {
 
 })
 
 //past conversation get
-app.post('/conversation' , (req , res)=>{
+app.post('/conversation', (req, res) => {
 
 })
 
 
 //past conversation get
-app.post('/conversation/:conversationId' , (req , res)=>{
+app.post('/conversation/:conversationId', (req, res) => {
 
 })
 
@@ -74,7 +79,7 @@ app.post('/perplexity_ask', async (req, res) => {
 	//step1 - get the query from the user 
 
 	const query = req.body.query;
-	
+
 
 	//step2 -  make sure user has the access/credits to hit the endpoint
 
@@ -90,7 +95,7 @@ app.post('/perplexity_ask', async (req, res) => {
 	const webSearchResult = webSearchResponse.results;
 	// console.log(webSearchResult)
 
-	
+
 
 	//step5 - do some context engineering on the prompt + websearch responses
 
@@ -116,8 +121,8 @@ app.post('/perplexity_ask', async (req, res) => {
 		],
 		stream: true,
 	});
-	
-	
+
+
 	res.setHeader("Content-Type", "text/plain; charset=utf-8");
 
 
@@ -139,11 +144,11 @@ app.post('/perplexity_ask', async (req, res) => {
 
 	//step8 - close the event stream	
 	res.write("/n </SOURCES>")
-	console.log(res) ; 
+	console.log(res);
 	res.end();
 })
 
-app.post("/perplexity_ask/followup" , async(req , res)=>{
+app.post("/perplexity_ask/followup", async (req, res) => {
 
 	// step 1- get the existing chat from the db
 	// step 2- fordward the full history to the llm
