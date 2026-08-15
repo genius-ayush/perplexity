@@ -2,6 +2,8 @@ import express from 'express'
 import { tavily } from '@tavily/core';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import cors from'cors' 
+
 import { PROMPT_TEMPLATE , SYSTEM_PROMPT } from './prompt.js';
 
 
@@ -14,7 +16,7 @@ if(!apiKey){
 const client = tavily({ apiKey: apiKey });
 
 const app = express();
-const port = 3000;
+const port = 3001;
 import "dotenv/config";
 import { prisma } from './lib/prisma.js';
 import { middleware } from './middleware.js';
@@ -25,17 +27,17 @@ const openai = new OpenAI({
 });
 
 app.use(express.json());
+app.use(cors()) ; 
 
+// const res = await prisma.user.create({
+// 	data:{
+// 		email: "ayush@gmail.com" , 
+// 		provider : "GMAIL" ,
+// 		name : "Ayush"
+// 	}
+// })
 
-const res = await prisma.user.create({
-	data:{
-		email: "ayush@gmail.com" , 
-		provider : "GMAIL" ,
-		name : "Ayush"
-	}
-})
-
-console.log(res) ; 
+// console.log(res) ; 
 
 app.get('/', (req, res) => {
 	res.send("hello world!")
@@ -50,9 +52,16 @@ app.post('/conversation',middleware ,  (req, res) => {
 	console.log(userId) ;  
 })
 
+app.get('/conversations' , middleware , (req , res)=>{
+	
+	res.json({
+		//@ts-ignore
+		userId : req.userId 
+	})
+})
 
 //past conversation get
-app.post('/conversation/:conversationId',middleware , (req, res) => {
+app.get('/conversation/:conversationId',middleware , (req, res) => {
 
 })
 

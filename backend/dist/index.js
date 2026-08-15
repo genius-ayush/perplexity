@@ -2,6 +2,7 @@ import express from 'express';
 import { tavily } from '@tavily/core';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import cors from 'cors';
 import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from './prompt.js';
 dotenv.config();
 const apiKey = process.env.TAVILY_API_KEY;
@@ -10,39 +11,43 @@ if (!apiKey) {
 }
 const client = tavily({ apiKey: apiKey });
 const app = express();
-const port = 3000;
+const port = 3001;
 import "dotenv/config";
 import { prisma } from './lib/prisma.js';
+import { middleware } from './middleware.js';
 const openai = new OpenAI({
     apiKey: process.env.LLM_API_KEY,
     baseURL: "https://api.groq.com/openai/v1",
 });
 app.use(express.json());
-const res = await prisma.user.create({
-    data: {
-        email: "ayush@gmail.com",
-        provider: "GMAIL",
-        name: "Ayush"
-    }
-});
-console.log(res);
+app.use(cors());
+// const res = await prisma.user.create({
+// 	data:{
+// 		email: "ayush@gmail.com" , 
+// 		provider : "GMAIL" ,
+// 		name : "Ayush"
+// 	}
+// })
+// console.log(res) ; 
 app.get('/', (req, res) => {
-    console.log("reacled here");
     res.send("hello world!");
 });
-//Signup
-app.post('/signup', (req, res) => {
+//past conversation get
+app.post('/conversation', middleware, (req, res) => {
+    //@ts-ignore 
+    const userId = req.userId;
+    console.log(userId);
 });
-//Signin
-app.post('/signin', (req, res) => {
+app.get('/conversations', middleware, (req, res) => {
+    res.json({
+        //@ts-ignore
+        userId: req.userId
+    });
 });
 //past conversation get
-app.post('/conversation', (req, res) => {
+app.get('/conversation/:conversationId', middleware, (req, res) => {
 });
-//past conversation get
-app.post('/conversation/:conversationId', (req, res) => {
-});
-app.post('/perplexity_ask', async (req, res) => {
+app.post('/perplexity_ask', middleware, async (req, res) => {
     //step1 - get the query from the user 
     const query = req.body.query;
     //step2 -  make sure user has the access/credits to hit the endpoint
@@ -90,7 +95,7 @@ app.post('/perplexity_ask', async (req, res) => {
     console.log(res);
     res.end();
 });
-app.post("/perplexity_ask/followup", async (req, res) => {
+app.post("/perplexity_ask/followup", middleware, async (req, res) => {
     // step 1- get the existing chat from the db
     // step 2- fordward the full history to the llm
     // step 2.5- do the context engineering here 
