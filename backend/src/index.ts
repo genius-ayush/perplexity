@@ -2,26 +2,22 @@ import express from 'express'
 import { tavily } from '@tavily/core';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
-import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from './prompt';
+import { PROMPT_TEMPLATE , SYSTEM_PROMPT } from './prompt.js';
 
 
 dotenv.config();
-const client = tavily({ apiKey: process.env.TAVILY_API_KEY });
+const apiKey = process.env.TAVILY_API_KEY ; 
+
+if(!apiKey){
+  throw new Error("Tavily api key is not defined!")
+}
+const client = tavily({ apiKey: apiKey });
 
 const app = express();
 const port = 3000;
 import "dotenv/config";
-import { PrismaClient } from "./generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-
-
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-export const prisma = new PrismaClient({ adapter });
-
-
-
-
+import { prisma } from './lib/prisma.js';
+import { middleware } from './middleware.js';
 
 const openai = new OpenAI({
 	apiKey: process.env.LLM_API_KEY,
@@ -31,49 +27,37 @@ const openai = new OpenAI({
 app.use(express.json());
 
 
-async function main() {
-  const user = await prisma.user.create({
-    data: {
-      email: "ayush@gmail.com",
-      provider: "GITHUB",
-      name: "Ayush",
-    },
-  });
+const res = await prisma.user.create({
+	data:{
+		email: "ayush@gmail.com" , 
+		provider : "GMAIL" ,
+		name : "Ayush"
+	}
+})
 
-  console.log(user);
-}
-
-main().catch(console.error);
-
+console.log(res) ; 
 
 app.get('/', (req, res) => {
 	res.send("hello world!")
 })
 
-//Signup
-app.post('/signup', (req, res) => {
-
-})
-
-
-//Signin
-app.post('/singin', (req, res) => {
-
-})
 
 //past conversation get
-app.post('/conversation', (req, res) => {
+app.post('/conversation',middleware ,  (req, res) => {
 
+	//@ts-ignore 
+	const userId = req.userId ;
+	console.log(userId) ;  
 })
 
 
 //past conversation get
-app.post('/conversation/:conversationId', (req, res) => {
+app.post('/conversation/:conversationId',middleware , (req, res) => {
 
 })
 
 
-app.post('/perplexity_ask', async (req, res) => {
+app.post('/perplexity_ask', middleware , async (req, res) => {
 
 
 	//step1 - get the query from the user 
@@ -148,7 +132,7 @@ app.post('/perplexity_ask', async (req, res) => {
 	res.end();
 })
 
-app.post("/perplexity_ask/followup", async (req, res) => {
+app.post("/perplexity_ask/followup", middleware ,  async (req, res) => {
 
 	// step 1- get the existing chat from the db
 	// step 2- fordward the full history to the llm

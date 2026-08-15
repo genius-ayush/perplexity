@@ -1,47 +1,40 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.prisma = void 0;
-const express_1 = __importDefault(require("express"));
-const core_1 = require("@tavily/core");
-const dotenv_1 = __importDefault(require("dotenv"));
-const openai_1 = __importDefault(require("openai"));
-const prompt_1 = require("./prompt");
-dotenv_1.default.config();
-const client = (0, core_1.tavily)({ apiKey: process.env.TAVILY_API_KEY });
-const app = (0, express_1.default)();
+import express from 'express';
+import { tavily } from '@tavily/core';
+import dotenv from 'dotenv';
+import OpenAI from 'openai';
+import { PROMPT_TEMPLATE, SYSTEM_PROMPT } from './prompt.js';
+dotenv.config();
+const apiKey = process.env.TAVILY_API_KEY;
+if (!apiKey) {
+    throw new Error("Tavily api key is not defined!");
+}
+const client = tavily({ apiKey: apiKey });
+const app = express();
 const port = 3000;
-require("dotenv/config");
-const client_1 = require("./generated/prisma/client");
-const adapter_pg_1 = require("@prisma/adapter-pg");
-const adapter = new adapter_pg_1.PrismaPg({ connectionString: process.env.DATABASE_URL });
-exports.prisma = new client_1.PrismaClient({ adapter });
-const openai = new openai_1.default({
+import "dotenv/config";
+import { prisma } from './lib/prisma.js';
+const openai = new OpenAI({
     apiKey: process.env.LLM_API_KEY,
     baseURL: "https://api.groq.com/openai/v1",
 });
-app.use(express_1.default.json());
-async function main() {
-    const user = await exports.prisma.user.create({
-        data: {
-            email: "ayush@gmail.com",
-            provider: "GITHUB",
-            name: "Ayush",
-        },
-    });
-    console.log(user);
-}
-main().catch(console.error);
+app.use(express.json());
+const res = await prisma.user.create({
+    data: {
+        email: "ayush@gmail.com",
+        provider: "GMAIL",
+        name: "Ayush"
+    }
+});
+console.log(res);
 app.get('/', (req, res) => {
+    console.log("reacled here");
     res.send("hello world!");
 });
 //Signup
 app.post('/signup', (req, res) => {
 });
 //Signin
-app.post('/singin', (req, res) => {
+app.post('/signin', (req, res) => {
 });
 //past conversation get
 app.post('/conversation', (req, res) => {
@@ -63,7 +56,7 @@ app.post('/perplexity_ask', async (req, res) => {
     // console.log(webSearchResult)
     //step5 - do some context engineering on the prompt + websearch responses
     //step 6 - hit the LLM and stream back the response. 
-    const prompt = prompt_1.PROMPT_TEMPLATE
+    const prompt = PROMPT_TEMPLATE
         .replace("{{WEB_SEARCH_RESULTS}}", JSON.stringify(webSearchResult))
         .replace("{{USER_QUERY}}", query);
     const response = await openai.responses.create({
@@ -71,7 +64,7 @@ app.post('/perplexity_ask', async (req, res) => {
         input: [
             {
                 role: "system",
-                content: prompt_1.SYSTEM_PROMPT,
+                content: SYSTEM_PROMPT,
             },
             {
                 role: "user",
