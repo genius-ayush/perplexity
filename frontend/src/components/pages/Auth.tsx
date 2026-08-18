@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "../ui/button";
+// import Login from "@/app/routes/login";
 // import { createClient } from '@supabase/supabase-js'
 const supabase = createClient() ; 
 // const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
 
-console.log(supabase);
+
 
 export default function Auth() {
 
@@ -15,6 +16,8 @@ export default function Auth() {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider : provider
         })
+
+        console.log("data" , data) ; 
 
        
 

@@ -16,12 +16,14 @@ const openai = new OpenAI({
     baseURL: "https://api.groq.com/openai/v1",
 });
 router.post('/', middleware, async (req, res) => {
+    console.log("middleware Test Passed");
     try {
         const { success, data } = askSchema.safeParse(req.body);
         if (!success) {
             res.status(411).json("invalid inputs");
             return;
         }
+        console.log("zod test passed");
         const { query, conversationId } = data;
         //@ts-ignore 
         const userId = req.userId;

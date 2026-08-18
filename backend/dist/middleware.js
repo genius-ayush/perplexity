@@ -3,6 +3,7 @@ import { prisma } from "./lib/prisma.js";
 const client = createSupabase();
 export async function middleware(req, res, next) {
     const token = req.headers.authorization;
+    console.log("reached inside the middleware");
     console.log("token", token);
     const data = await client.auth.getUser(token);
     const userId = data.data.user?.id;
